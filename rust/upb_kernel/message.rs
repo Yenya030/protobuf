@@ -113,8 +113,12 @@ impl<'msg, T: Message> MessageMutInner<'msg, T> {
         self.ptr.raw()
     }
 
-    pub fn arena(&self) -> &Arena {
+    pub fn arena(&self) -> &'msg Arena {
         self.arena
+    }
+
+    pub fn ptr_and_arena(&self) -> (MessagePtr<T>, &'msg Arena) {
+        (self.ptr, self.arena)
     }
 
     pub fn as_view(&self) -> MessageViewInner<'msg, T> {
@@ -391,6 +395,10 @@ where
         //~ TODO: This discards the info we have about the reason
         //~ of the failure, we should try to keep it instead.
         upb::wire::encode(self.get_ptr(Private)).map_err(|_| SerializeError)
+    }
+
+    fn serialized_len(&self) -> usize {
+        upb::wire::byte_size(self.get_ptr(Private))
     }
 }
 
